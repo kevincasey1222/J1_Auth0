@@ -1,8 +1,9 @@
-import http from 'http';
+const ManagementClient = require('auth0').ManagementClient;
 
 import { IntegrationProviderAuthenticationError } from '@jupiterone/integration-sdk-core';
 
 import { IntegrationConfig } from './config';
+import { Auth0ManagementClient } from './types/managementClient';
 
 export type ResourceIteratee<T> = (each: T) => Promise<void> | void;
 
@@ -19,19 +20,6 @@ type AcmeGroup = {
   users?: Pick<AcmeUser, 'id'>[];
 };
 
-// Those can be useful to a degree, but often they're just full of optional
-// values. Understanding the response data may be more reliably accomplished by
-// reviewing the API response recordings produced by testing the wrapper client
-// (below). However, when there are no types provided, it is necessary to define
-// opaque types for each resource, to communicate the records that are expected
-// to come from an endpoint and are provided to iterating functions.
-
-/*
-import { Opaque } from 'type-fest';
-export type AcmeUser = Opaque<any, 'AcmeUser'>;
-export type AcmeGroup = Opaque<any, 'AcmeGroup'>;
-*/
-
 /**
  * An APIClient maintains authentication state and provides an interface to
  * third party data APIs.
@@ -41,41 +29,39 @@ export type AcmeGroup = Opaque<any, 'AcmeGroup'>;
  * resources.
  */
 export class APIClient {
+  managementClient: any;
   constructor(readonly config: IntegrationConfig) {}
 
   public async verifyAuthentication(): Promise<void> {
-    // TODO make the most light-weight request possible to validate
-    // authentication works with the provided credentials, throw an err if
-    // authentication fails
-    const request = new Promise<void>((resolve, reject) => {
-      http.get(
-        {
-          hostname: 'localhost',
-          port: 443,
-          path: '/api/v1/some/endpoint?limit=1',
-          agent: false,
-          timeout: 10,
-        },
-        (res) => {
-          if (res.statusCode !== 200) {
-            reject(new Error('Provider authentication failed'));
-          } else {
-            resolve();
-          }
-        },
-      );
+    //retrieves a token automatically and applies it to subsequent requests
+    //token expiration is configured on the auth0 site; default is 24 hours
+    const management: Auth0ManagementClient = new ManagementClient({
+      domain: this.config.domain,
+      clientId: this.config.clientId,
+      clientSecret: this.config.clientSecret,
+      scope: 'read:users', //scopes also have to be authorized on the auth0 site
     });
 
+    //limit the reply since we're just validating
+    const params = {
+      per_page: 1,
+      page: 0,
+    };
+
+    //todo: get ride of this reply. dont need it
+    let reply;
+
     try {
-      await request;
+      reply = await management.getUsers(params);
     } catch (err) {
       throw new IntegrationProviderAuthenticationError({
         cause: err,
-        endpoint: 'https://localhost/api/v1/some/endpoint?limit=1',
+        endpoint: this.config.domain,
         status: err.status,
         statusText: err.statusText,
       });
     }
+    console.log(reply);
   }
 
   /**
