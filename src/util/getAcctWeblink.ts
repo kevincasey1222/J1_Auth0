@@ -11,6 +11,5 @@ export function getAcctWeblink(domain) {
   } else {
     webLink = '';
   }
-  console.log(webLink);
   return webLink;
 }

@@ -5,11 +5,10 @@ import {
 } from '@jupiterone/integration-sdk-core';
 
 import { IntegrationConfig } from '../config';
-import { getAcctWeblink } from '../util/getWeblink';
+import { getAcctWeblink } from '../util/getAcctWeblink';
 
 export const DATA_ACCOUNT_ENTITY = 'DATA_ACCOUNT_ENTITY';
-export const ACCOUNT_ENTITY_KEY = 'auth0-account';
-export const ACCOUNT_ENTITY_TYPE = 'auth0-account';
+export const ACCOUNT_ENTITY_TYPE = 'auth0_account';
 
 export async function fetchAccountDetails({
   instance,

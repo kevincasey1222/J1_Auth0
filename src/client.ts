@@ -4,21 +4,10 @@ import { IntegrationProviderAuthenticationError } from '@jupiterone/integration-
 
 import { IntegrationConfig } from './config';
 import { Auth0ManagementClient } from './types/managementClient';
+import { Auth0User } from './types/users';
+import { Auth0Client } from './types/clients';
 
 export type ResourceIteratee<T> = (each: T) => Promise<void> | void;
-
-// Providers often supply types with their API libraries.
-
-type AcmeUser = {
-  id: string;
-  name: string;
-};
-
-type AcmeGroup = {
-  id: string;
-  name: string;
-  users?: Pick<AcmeUser, 'id'>[];
-};
 
 /**
  * An APIClient maintains authentication state and provides an interface to
@@ -29,30 +18,27 @@ type AcmeGroup = {
  * resources.
  */
 export class APIClient {
-  managementClient: any;
-  constructor(readonly config: IntegrationConfig) {}
+  managementClient: Auth0ManagementClient;
+  //retrieves a token automatically and applies it to subsequent requests
+  //token expiration is configured on the auth0 site; default is 24 hours
+  constructor(readonly config: IntegrationConfig) {
+    this.managementClient = new ManagementClient({
+      domain: config.domain,
+      clientId: config.clientId,
+      clientSecret: config.clientSecret,
+    });
+  }
 
   public async verifyAuthentication(): Promise<void> {
-    //retrieves a token automatically and applies it to subsequent requests
-    //token expiration is configured on the auth0 site; default is 24 hours
-    const management: Auth0ManagementClient = new ManagementClient({
-      domain: this.config.domain,
-      clientId: this.config.clientId,
-      clientSecret: this.config.clientSecret,
-      scope: 'read:users', //scopes also have to be authorized on the auth0 site
-    });
-
+    //lightweight authen check
     //limit the reply since we're just validating
     const params = {
       per_page: 1,
       page: 0,
     };
 
-    //todo: get ride of this reply. dont need it
-    let reply;
-
     try {
-      reply = await management.getUsers(params);
+      await this.managementClient.getUsers(params);
     } catch (err) {
       throw new IntegrationProviderAuthenticationError({
         cause: err,
@@ -61,7 +47,6 @@ export class APIClient {
         statusText: err.statusText,
       });
     }
-    console.log(reply);
   }
 
   /**
@@ -70,7 +55,7 @@ export class APIClient {
    * @param iteratee receives each resource to produce entities/relationships
    */
   public async iterateUsers(
-    iteratee: ResourceIteratee<AcmeUser>,
+    iteratee: ResourceIteratee<Auth0User>,
   ): Promise<void> {
     // TODO paginate an endpoint, invoke the iteratee with each record in the
     // page
@@ -80,16 +65,8 @@ export class APIClient {
     // the page, invoke the `ResourceIteratee`. This will encourage a pattern
     // where each resource is processed and dropped from memory.
 
-    const users: AcmeUser[] = [
-      {
-        id: 'acme-user-1',
-        name: 'User One',
-      },
-      {
-        id: 'acme-user-2',
-        name: 'User Two',
-      },
-    ];
+    //todo - consider pagination
+    const users: Auth0User[] = await this.managementClient.getUsers();
 
     for (const user of users) {
       await iteratee(user);
@@ -97,12 +74,12 @@ export class APIClient {
   }
 
   /**
-   * Iterates each group resource in the provider.
+   * Iterates each client (ie. Application) resource in the provider.
    *
    * @param iteratee receives each resource to produce entities/relationships
    */
-  public async iterateGroups(
-    iteratee: ResourceIteratee<AcmeGroup>,
+  public async iterateClients(
+    iteratee: ResourceIteratee<Auth0Client>,
   ): Promise<void> {
     // TODO paginate an endpoint, invoke the iteratee with each record in the
     // page
@@ -112,7 +89,7 @@ export class APIClient {
     // the page, invoke the `ResourceIteratee`. This will encourage a pattern
     // where each resource is processed and dropped from memory.
 
-    const groups: AcmeGroup[] = [
+    const clients: Auth0Client[] = [
       {
         id: 'acme-group-1',
         name: 'Group One',
@@ -124,8 +101,8 @@ export class APIClient {
       },
     ];
 
-    for (const group of groups) {
-      await iteratee(group);
+    for (const client of clients) {
+      await iteratee(client);
     }
   }
 }

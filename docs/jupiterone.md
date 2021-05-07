@@ -98,8 +98,8 @@ The following entities are created:
 
 | Resources     | Entity `_type`  | Entity `_class` |
 | ------------- | --------------- | --------------- |
-| Account       | `acme_account`  | `Account`       |
-| Auth0 Account | `auth0-account` | `Account`       |
+| Auth0 Account | `auth0_account` | `Account`       |
+| User          | `auth0_user`    | `User`          |
 
 ### Relationships
 
@@ -107,9 +107,7 @@ The following relationships are created/mapped:
 
 | Source Entity `_type` | Relationship `_class` | Target Entity `_type` |
 | --------------------- | --------------------- | --------------------- |
-| `acme_account`        | **HAS**               | `acme_group`          |
-| `acme_account`        | **HAS**               | `acme_user`           |
-| `acme_group`          | **HAS**               | `acme_user`           |
+| `auth0_account`       | **HAS**               | `auth0_user`          |
 
 <!--
 ********************************************************************************
