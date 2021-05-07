@@ -91,13 +91,8 @@ export class APIClient {
 
     const clients: Auth0Client[] = [
       {
-        id: 'acme-group-1',
+        client_id: 'acme-application1',
         name: 'Group One',
-        users: [
-          {
-            id: 'acme-user-1',
-          },
-        ],
       },
     ];
 
