@@ -33,6 +33,7 @@ export async function fetchUsers({
             username: user.username || '',
             nickname: user.nickname,
             email: user.email,
+            webLink: accountEntity.webLink + 'users', //userids are hashed in user-specific URLs
             userId: user.user_id,
             emailVerified: user.email_verified,
             phoneNumber: user.phone_number,

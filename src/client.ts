@@ -89,12 +89,7 @@ export class APIClient {
     // the page, invoke the `ResourceIteratee`. This will encourage a pattern
     // where each resource is processed and dropped from memory.
 
-    const clients: Auth0Client[] = [
-      {
-        client_id: 'acme-application1',
-        name: 'Group One',
-      },
-    ];
+    const clients: Auth0Client[] = await this.managementClient.getClients();
 
     for (const client of clients) {
       await iteratee(client);

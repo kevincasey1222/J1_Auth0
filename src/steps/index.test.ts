@@ -4,6 +4,7 @@ import { IntegrationConfig } from '../config';
 import { fetchUsers } from './users';
 import { fetchAccountDetails } from './account';
 import { integrationConfig } from '../../test/config';
+import { fetchClients } from './clients';
 
 test('should collect data', async () => {
   const context = createMockStepExecutionContext<IntegrationConfig>({
@@ -14,6 +15,7 @@ test('should collect data', async () => {
   // See https://github.com/JupiterOne/sdk/issues/262.
   await fetchAccountDetails(context);
   await fetchUsers(context);
+  await fetchClients(context);
 
   // Review snapshot, failure is a regression
   expect({
@@ -68,29 +70,24 @@ test('should collect data', async () => {
     },
   });
 
-  /*
-  const userGroups = context.jobState.collectedEntities.filter((e) =>
-    e._class.includes('UserGroup'),
+  const appClients = context.jobState.collectedEntities.filter((e) =>
+    e._class.includes('Application'),
   );
-  expect(userGroups.length).toBeGreaterThan(0);
-  expect(userGroups).toMatchGraphObjectSchema({
-    _class: ['UserGroup'],
+  expect(appClients.length).toBeGreaterThan(0);
+  expect(appClients).toMatchGraphObjectSchema({
+    _class: ['Application'],
     schema: {
-      additionalProperties: false,
+      additionalProperties: true,
       properties: {
-        _type: { const: 'acme_group' },
-        logoLink: {
-          type: 'string',
-          // Validate that the `logoLink` property has a URL format
-          format: 'url',
-        },
+        _type: { const: 'auth0_client' },
+        name: { type: 'string' },
+        tenant: { type: 'string' },
         _rawData: {
           type: 'array',
           items: { type: 'object' },
         },
       },
-      required: ['logoLink'],
+      required: [],
     },
   });
-  */
 });

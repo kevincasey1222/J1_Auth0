@@ -21,7 +21,7 @@ export interface Auth0User {
   picture?: string;
   name?: string;
   nickname?: string;
-  multifactor?: string[];
+  multifactor?: string[]; //List of multi-factor authentication providers with which this user has enrolled.
   last_ip?: string;
   last_login?: string;
   logins_count?: number;

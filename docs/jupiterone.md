@@ -99,6 +99,7 @@ The following entities are created:
 | Resources     | Entity `_type`  | Entity `_class` |
 | ------------- | --------------- | --------------- |
 | Auth0 Account | `auth0_account` | `Account`       |
+| Auth0 Client  | `auth0_client`  | `Application`   |
 | User          | `auth0_user`    | `User`          |
 
 ### Relationships
@@ -107,6 +108,7 @@ The following relationships are created/mapped:
 
 | Source Entity `_type` | Relationship `_class` | Target Entity `_type` |
 | --------------------- | --------------------- | --------------------- |
+| `auth0_account`       | **HAS**               | `auth0_client`        |
 | `auth0_account`       | **HAS**               | `auth0_user`          |
 
 <!--
