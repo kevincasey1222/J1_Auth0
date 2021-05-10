@@ -3,16 +3,7 @@ import { createMockStepExecutionContext } from '@jupiterone/integration-sdk-test
 import { IntegrationConfig } from '../config';
 import { fetchUsers } from './users';
 import { fetchAccountDetails } from './account';
-
-const DEFAULT_CLIENT_ID = 'dummy-acme-client-id';
-const DEFAULT_CLIENT_SECRET = 'dummy-acme-client-secret';
-const DEFAULT_DOMAIN = 'dev-jupiterone.us.auth0.com';
-
-const integrationConfig: IntegrationConfig = {
-  clientId: process.env.CLIENT_ID || DEFAULT_CLIENT_ID,
-  clientSecret: process.env.CLIENT_SECRET || DEFAULT_CLIENT_SECRET,
-  domain: process.env.DOMAIN || DEFAULT_DOMAIN,
-};
+import { integrationConfig } from '../../test/config';
 
 test('should collect data', async () => {
   const context = createMockStepExecutionContext<IntegrationConfig>({
@@ -37,44 +28,45 @@ test('should collect data', async () => {
     e._class.includes('Account'),
   );
   expect(accounts.length).toBeGreaterThan(0);
-  /*
   expect(accounts).toMatchGraphObjectSchema({
     _class: ['Account'],
     schema: {
-      additionalProperties: false,
+      additionalProperties: true,
       properties: {
-        _type: { const: 'acme_account' },
-        manager: { type: 'string' },
+        _type: { const: 'auth0_account' },
+        name: { type: 'string' },
+        displayName: { type: 'string' },
+        webLink: { type: 'string', format: 'url' },
         _rawData: {
           type: 'array',
           items: { type: 'object' },
         },
       },
-      required: ['manager'],
+      required: ['name', 'displayName', 'webLink'],
     },
   });
-  */
 
   const users = context.jobState.collectedEntities.filter((e) =>
     e._class.includes('User'),
   );
   expect(users.length).toBeGreaterThan(0);
-  /*
   expect(users).toMatchGraphObjectSchema({
     _class: ['User'],
     schema: {
-      additionalProperties: false,
+      additionalProperties: true,
       properties: {
-        _type: { const: 'acme_user' },
-        firstName: { type: 'string' },
+        _type: { const: 'auth0_user' },
+        name: { type: 'string' },
+        displayName: { type: 'string' },
+        email: { type: 'string' },
         _rawData: {
           type: 'array',
           items: { type: 'object' },
         },
       },
-      required: ['firstName'],
+      required: ['name', 'displayName', 'email'],
     },
-  });*/
+  });
 
   /*
   const userGroups = context.jobState.collectedEntities.filter((e) =>
