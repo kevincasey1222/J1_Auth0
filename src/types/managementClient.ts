@@ -18,6 +18,6 @@ export interface Auth0ManagementClient {
   // [API Endpoint]: https://auth0.github.io/node-auth0/module-management.ManagementClient.html#getUsers
   getUsers: (params?: object) => Promise<Auth0User[]>;
 
-  // [API Endpoint]: https://auth0.github.io/node-auth0/module-management.ManagementClient.html#getUsers
+  // [API Endpoint]: https://auth0.github.io/node-auth0/module-management.ManagementClient.html#getClients
   getClients: (params?: object) => Promise<Auth0Client[]>;
 }

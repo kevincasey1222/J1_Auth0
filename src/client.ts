@@ -57,19 +57,40 @@ export class APIClient {
   public async iterateUsers(
     iteratee: ResourceIteratee<Auth0User>,
   ): Promise<void> {
-    // TODO paginate an endpoint, invoke the iteratee with each record in the
-    // page
+    //Auth0 sets the per_page max at 100 (default is 50)
+    //Also, they set an absolute max of 1000 users from any given query
+    //When we ask for .getUsers() in the management client, it is hitting the API
+    //with an unfiltered query against /api/v2/users, and that returns a max of 1000
+    //(10 pages of 100 users each). Even though we're only asking for a specific page
+    //of 100 users in a given call of .getUsers(), the API is selecting a max of 1000
+    //users to draw that result from, which could lead to inconsistent results if there
+    //are more than 1000 users in the system
+
+    //Therefore, if there are more than 1000 users to ingest, we'll have to filter the
+    //searches somehow. For example, we could iterate over the alphabet and get users by
+    //the first letter of their name with this additional param:
     //
-    // The provider API will hopefully support pagination. Functions like this
-    // should maintain pagination state, and for each page, for each record in
-    // the page, invoke the `ResourceIteratee`. This will encourage a pattern
-    // where each resource is processed and dropped from memory.
+    //q: 'name:a*'
+    //
+    //We can filter on any user attribute. The specific best choice probably depends on
+    //the use case. Filter query documentation is here:
+    //https://auth0.com/docs/users/user-search/user-search-query-syntax
+    // Client params syntax is here:
+    //https://auth0.github.io/node-auth0/module-management.ManagementClient.html#getUsers
 
-    //todo - consider pagination
-    const users: Auth0User[] = await this.managementClient.getUsers();
-
-    for (const user of users) {
-      await iteratee(user);
+    let userCount: number = 1;
+    let pageNum: number = 0;
+    while (userCount > 0) {
+      const params = {
+        per_page: 100,
+        page: pageNum,
+      };
+      const users: Auth0User[] = await this.managementClient.getUsers(params);
+      userCount = users.length;
+      pageNum = pageNum + 1;
+      for (const user of users) {
+        await iteratee(user);
+      }
     }
   }
 
@@ -81,18 +102,22 @@ export class APIClient {
   public async iterateClients(
     iteratee: ResourceIteratee<Auth0Client>,
   ): Promise<void> {
-    // TODO paginate an endpoint, invoke the iteratee with each record in the
-    // page
-    //
-    // The provider API will hopefully support pagination. Functions like this
-    // should maintain pagination state, and for each page, for each record in
-    // the page, invoke the `ResourceIteratee`. This will encourage a pattern
-    // where each resource is processed and dropped from memory.
-
-    const clients: Auth0Client[] = await this.managementClient.getClients();
-
-    for (const client of clients) {
-      await iteratee(client);
+    //see Users comments for API limitations, though they are unlikely to be a problem here
+    let appCount: number = 1;
+    let pageNum: number = 0;
+    while (appCount > 0) {
+      const params = {
+        per_page: 100,
+        page: pageNum,
+      };
+      const clients: Auth0Client[] = await this.managementClient.getClients(
+        params,
+      );
+      appCount = clients.length;
+      pageNum = pageNum + 1;
+      for (const client of clients) {
+        await iteratee(client);
+      }
     }
   }
 }
