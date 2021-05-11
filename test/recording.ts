@@ -48,8 +48,8 @@ function redact(entry): void {
   }
 
   //if it wasn't a token call, parse the response text, removing any carriage returns or newlines
-  let responseText = entry.response.content.text;
-  let parsedResponseText = JSON.parse(responseText.replace(/\r?\n|\r/g, ''));
+  const responseText = entry.response.content.text;
+  const parsedResponseText = JSON.parse(responseText.replace(/\r?\n|\r/g, ''));
 
   //now we can modify the returned object as desired
   /*
