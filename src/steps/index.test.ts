@@ -1,12 +1,27 @@
-import { createMockStepExecutionContext } from '@jupiterone/integration-sdk-testing';
+import {
+  createMockStepExecutionContext,
+  Recording,
+} from '@jupiterone/integration-sdk-testing';
 
 import { IntegrationConfig } from '../config';
 import { fetchUsers } from './users';
 import { fetchAccountDetails } from './account';
 import { integrationConfig } from '../../test/config';
 import { fetchClients } from './clients';
+import { setupAuth0Recording } from '../../test/recording';
+
+let recording: Recording;
+
+afterEach(async () => {
+  await recording.stop();
+});
 
 test('should collect data', async () => {
+  recording = setupAuth0Recording({
+    directory: __dirname,
+    name: 'steps',
+  });
+
   const context = createMockStepExecutionContext<IntegrationConfig>({
     instanceConfig: integrationConfig,
   });
